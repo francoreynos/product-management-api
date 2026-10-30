@@ -7,10 +7,13 @@ RESTful API developed with Laravel and MySQL to manage products, currencies, and
 - Complete product CRUD operations (Create, Read, Update, Delete).
 - Currency association for each product.
 - Product price history with support for different currencies.
+- Currency exchange rate management.
 - Product tax cost and manufacturing cost management.
+- Token-based authentication using Laravel Sanctum.
 - Request validation and JSON responses.
 - Eloquent ORM relationships and database migrations.
 - Automatic deletion of a product's price history when the product is deleted.
+- Protected product endpoints requiring authentication.
 - Automated feature tests covering the main API endpoints and validations.
 
 ## Tech Stack
@@ -19,6 +22,7 @@ RESTful API developed with Laravel and MySQL to manage products, currencies, and
 - Laravel
 - MySQL
 - Eloquent ORM
+- Laravel Sanctum
 - REST API / JSON
 
 ## Requirements
@@ -30,7 +34,12 @@ RESTful API developed with Laravel and MySQL to manage products, currencies, and
 
 ## Installation
 
-1. Clone or download the repository.
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/francoreynos/product-management-api.git
+   cd product-management-api
+   ```
 
 2. Install PHP dependencies:
 
@@ -60,15 +69,18 @@ RESTful API developed with Laravel and MySQL to manage products, currencies, and
 6. Run the database migrations and seed the initial currencies:
 
    ```bash
-   php artisan migrate
-   php artisan db:seed
+   php artisan migrate --seed
    ```
 
    The database seeder creates the following initial currencies:
 
-   - ARS — Argentine Peso
-   - USD — US Dollar
-   - EUR — Euro
+   | Code | Currency | Exchange Rate |
+   |---|---|---:|
+   | USD | US Dollar | 1.000000 |
+   | ARS | Argentine Peso | 1500.000000 |
+   | EUR | Euro | 0.920000 |
+
+   **Note:** USD is used as the reference currency. The exchange rates are illustrative initial values and are not automatically updated from an external exchange rate provider.
 
 7. Start the development server:
 
@@ -80,16 +92,71 @@ The API will be available at:
 
 `http://127.0.0.1:8000/api`
 
+## Authentication
+
+The API uses Laravel Sanctum for token-based authentication.
+
+### Register
+
+**POST** `/api/register`
+
+Creates a new user and returns an authentication token.
+
+Example request:
+
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "Password123!"
+}
+```
+
+### Login
+
+**POST** `/api/login`
+
+Authenticates an existing user and returns an access token.
+
+Example request:
+
+```json
+{
+  "email": "john@example.com",
+  "password": "Password123!"
+}
+```
+
+### Authenticated Requests
+
+All product and product price endpoints require a valid Bearer Token.
+
+Include the following header in authenticated requests:
+
+```http
+Authorization: Bearer YOUR_ACCESS_TOKEN
+Accept: application/json
+```
+
+### Logout
+
+**POST** `/api/logout`
+
+Invalidates the current access token.
+
+Requires authentication.
+
 ## Database Schema
 
 ### Currencies
 
-Stores supported currencies.
+Stores supported currencies and their exchange rates.
 
 - `id`
-- `code` — three-character currency code.
+- `code` — three-character currency code (e.g., USD, ARS, EUR).
 - `name` — currency name.
 - `symbol` — currency symbol.
+- `exchange_rate` — exchange rate relative to the reference currency.
 - `created_at`, `updated_at`
 
 ### Products
@@ -117,8 +184,13 @@ Stores historical prices associated with products and currencies.
 
 ## API Endpoints
 
+All product and product price endpoints require authentication.
+
 | Method | Endpoint | Description |
 |---|---|---|
+| POST | `/api/register` | Register a new user |
+| POST | `/api/login` | Authenticate a user and obtain a token |
+| POST | `/api/logout` | Invalidate the current access token |
 | GET | `/api/products` | List all products |
 | POST | `/api/products` | Create a product |
 | GET | `/api/products/{id}` | Retrieve a product, its currency, and price history |
@@ -128,6 +200,8 @@ Stores historical prices associated with products and currencies.
 | POST | `/api/products/{id}/prices` | Add a historical price |
 
 ## Example Requests
+
+The following examples assume that an access token has already been obtained through registration or login.
 
 ### Create a Product
 
@@ -155,12 +229,34 @@ Stores historical prices associated with products and currencies.
 }
 ```
 
-The `currency_id` must reference an existing currency. Currency records must be created before products or historical prices can reference them.
+The `currency_id` must reference an existing currency. Currency records are initially created through the database seeder.
 
 ## Validation and Responses
 
-- Successful product creation returns HTTP `201 Created`.
-- Successful historical price creation returns HTTP `201 Created`.
-- Successful read, update, and delete operations return HTTP `200 OK`.
-- Invalid input returns HTTP `422 Unprocessable Entity` with JSON validation details.
-- Requests for non-existing products return HTTP `404
+The API returns JSON responses and uses standard HTTP status codes.
+
+- `200 OK` — Successful read, update, or delete operation.
+- `201 Created` — Successful user registration, product creation, or historical price creation.
+- `401 Unauthorized` — Missing or invalid authentication token, or invalid login credentials.
+- `404 Not Found` — Requested resource does not exist.
+- `422 Unprocessable Entity` — Invalid input or validation errors.
+
+Laravel automatically handles request validation and returns JSON responses containing validation error details.
+
+## Testing
+
+The project includes automated feature tests covering authentication, product management, price history, and validation.
+
+Run the test suite with:
+
+```bash
+php artisan test
+```
+
+## Security
+
+- Product and price endpoints are protected using Laravel Sanctum.
+- Passwords are securely hashed before being stored.
+- Input data is validated before database operations.
+- Eloquent relationships and database foreign keys maintain data integrity.
+- Access tokens can be invalidated through the logout endpoint.

@@ -11,7 +11,15 @@ class Currency extends Model
         'code',
         'name',
         'symbol',
+        'exchange_rate',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'exchange_rate' => 'decimal:6',
+        ];
+    }
 
     public function products(): HasMany
     {

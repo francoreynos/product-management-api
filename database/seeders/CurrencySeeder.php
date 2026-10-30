@@ -10,9 +10,24 @@ class CurrencySeeder extends Seeder
     public function run(): void
     {
         $currencies = [
-            ['code' => 'ARS', 'name' => 'Argentine Peso', 'symbol' => '$'],
-            ['code' => 'USD', 'name' => 'US Dollar', 'symbol' => 'US$'],
-            ['code' => 'EUR', 'name' => 'Euro', 'symbol' => '€'],
+            [
+                'code' => 'USD',
+                'name' => 'US Dollar',
+                'symbol' => 'US$',
+                'exchange_rate' => 1.000000,
+            ],
+            [
+                'code' => 'ARS',
+                'name' => 'Argentine Peso',
+                'symbol' => '$',
+                'exchange_rate' => 1500.000000,
+            ],
+            [
+                'code' => 'EUR',
+                'name' => 'Euro',
+                'symbol' => '€',
+                'exchange_rate' => 0.920000,
+            ],
         ];
 
         foreach ($currencies as $currency) {
@@ -21,6 +36,7 @@ class CurrencySeeder extends Seeder
                 [
                     'name' => $currency['name'],
                     'symbol' => $currency['symbol'],
+                    'exchange_rate' => $currency['exchange_rate'],
                 ]
             );
         }
