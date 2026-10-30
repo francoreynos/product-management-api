@@ -243,6 +243,26 @@ The API returns JSON responses and uses standard HTTP status codes.
 
 Laravel automatically handles request validation and returns JSON responses containing validation error details.
 
+## API Documentation (Postman)
+
+A Postman collection is included in the repository to simplify API testing.
+
+### Importing the Collection
+
+1. Open Postman.
+2. Click **Import**.
+3. Select the `Product Management API.postman_collection.json` file from the project root.
+4. Import the collection.
+
+### Using the Collection
+
+1. Start the Laravel development server using `php artisan serve`.
+2. Run the **Register** or **Login** request from the Authentication folder.
+3. The collection automatically saves the returned Sanctum token.
+4. Use the requests in the Products and Product Prices folders to test the API endpoints.
+
+The collection includes requests for authentication, product CRUD operations, and product price history.
+
 ## Testing
 
 The project includes automated feature tests covering authentication, product management, price history, and validation.
